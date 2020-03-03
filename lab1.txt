@@ -1,0 +1,62 @@
+#!/bin/bash
+echo "Razrabotal: Grigoryev Kirill"
+echo "Nazvanie: Zapis na CD"
+echo "Opisanie: Programma prednaznachena dlya razmeshcheniya vybrannogo kataloga na obraz CD-diska"
+while true
+do
+	while true
+	do
+		echo -n "Wvedite put do kataloga:"
+		read path
+		lines=$(find / -name $path | wc -l)
+		if [ $lines -eq 0 ]
+			 then
+				 echo "Takoi direktorii ne sushestvuet"
+				 break
+			 else
+				 echo "Takaya direktoria naidena"
+			 fi
+		read -r -p "Vi hotite zapisat na CD faili po puti $path? Dlya smeni puti wvedite lyboi drugoi simvol [y/n]" input
+		case $input in
+			[yY][eE][sS]|[yY]* ) echo "Yes"; break;;
+			[nN][oO]|[nN]* ) echo "No"; lines=0;;
+			* ) echo "Smena puti";;
+		esac
+	done
+	while true
+	do
+		if [ $lines -eq 0 ]
+		then 
+			break
+		fi
+		echo -n "Wvedite nazvanie obraza diska:"
+		read name
+		read -r -p "Vash obraz budet nazvan: $name, vi uvereni? Dlya smeni imeni wvedite lyboi drugoi simvol [y/n]" input
+		case $input in
+			[yY][eE][sS]|[yY]* ) echo "Yes"; break;;
+			[nN][oO]|[nN]* ) echo "No"; lines=0;;
+			* ) echo "Smena imeni";;
+		esac
+	done
+	if [ $lines -ne 0 ]
+	then
+		lines=$(find / -name $name".iso" | wc -l)
+		if [ $lines -eq 0 ] 
+		then
+			name+=".iso"
+			genisoimage -o $name $path
+			echo "Fail uspeshno sozdan"
+		else
+			echo "Fail s takim imenem uzshe sushestvuet, k imeni budet pripisano tekushee vremya"
+			name+="."$(date +%T)".iso"
+			genisoimage -o $name $path
+			echo "Fail uspeshno sozdan"
+		fi
+	fi
+	read -r -p "Vi hotite prodolzhit raboty? [y/n]" input
+	case $input in
+		[yY][eE][sS]|[yY]* ) echo "Yes";;
+		[nN][oO]|[nN]* ) echo "No"; exit;;
+		* ) echo "oshibka vvoda:"; exit;;	
+	esac
+done
